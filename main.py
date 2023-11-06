@@ -31,7 +31,7 @@ def draw(layer_num, coord, color):
     pygame.draw.rect(game_window, color, square['rect'])
 
 
-def draw_line(start, end, color):
+def draw_line(start, end, color, thickness=1):
     # Calculate differences
     dx = end[0] - start[0]
     dy = end[1] - start[1]
@@ -41,25 +41,26 @@ def draw_line(start, end, color):
     dx = abs(dx)
     dy = abs(dy)
 
-    if dx > dy:
-        if dx == 0:  # Prevent division by zero
-            yy_range = range(start[1], end[1] + y_sign, y_sign)
-        else:
-            yy_range = [int(round(start[1] + (dy / dx) * y_sign * step)) for step in range(dx + 1)]
+    # Ensure thickness is at least 1
+    thickness = max(1, thickness)
 
-        for idx, xx in enumerate(range(start[0], end[0] + x_sign, x_sign)):
-            yy = yy_range[min(idx, len(yy_range) - 1)]
-            draw(0, (xx, yy), color)
+    # Draw the central line
+    def draw_line_single(xx, yy):
+        draw(0, (xx, yy), color)
+
+    if dx > dy:
+        yy_range = [int(round(start[1] + (dy / dx) * y_sign * step)) if dx != 0 else start[1] for step in range(dx + 1)]
+        for offset in range(-(thickness // 2), (thickness // 2) + 1):
+            for idx, xx in enumerate(range(start[0], end[0] + x_sign, x_sign)):
+                yy = yy_range[min(idx, len(yy_range) - 1)] + offset
+                draw_line_single(xx, yy)
 
     else:
-        if dy == 0:  # Prevent division by zero for horizontal line
-            xx_range = range(start[0], end[0] + x_sign, x_sign)
-        else:
-            xx_range = [int(round(start[0] + (dx / dy) * x_sign * step)) for step in range(dy + 1)]
-
-        for idx, yy in enumerate(range(start[1], end[1] + y_sign, y_sign)):
-            xx = xx_range[min(idx, len(xx_range) - 1)]
-            draw(0, (xx, yy), color)
+        xx_range = [int(round(start[0] + (dx / dy) * x_sign * step)) if dy != 0 else start[0] for step in range(dy + 1)]
+        for offset in range(-(thickness // 2), (thickness // 2) + 1):
+            for idx, yy in enumerate(range(start[1], end[1] + y_sign, y_sign)):
+                xx = xx_range[min(idx, len(xx_range) - 1)] + offset
+                draw_line_single(xx, yy)
 
 
 while True:
@@ -71,7 +72,7 @@ while True:
             if event.buttons[0] == 1:
                 mouse_coord = (min(resolution[0] - 1, max(0, event.pos[0] // pixel_size[0])), min(resolution[1] - 1, max(0, event.pos[1] // pixel_size[1])))
                 if last_mouse_pos:
-                    draw_line(last_mouse_pos, mouse_coord, (0, 255, 0))
+                    draw_line(last_mouse_pos, mouse_coord, (0, 255, 0), 4)
                 else:
                     draw(0, mouse_coord, (0, 255, 0))
                 last_mouse_pos = mouse_coord
