@@ -24,6 +24,8 @@ last_mouse_pos = None
 
 
 def draw(layer_num, coord, color):
+    coord = (min(resolution[0] - 1, max(0, coord[0])), min(resolution[1] - 1, max(0, coord[1])))
+
     square = layers[layer_num][coord]
     square['colour'] = color
 
@@ -70,9 +72,9 @@ while True:
             quit()
         if event.type == pygame.MOUSEMOTION:
             if event.buttons[0] == 1:
-                mouse_coord = (min(resolution[0] - 1, max(0, event.pos[0] // pixel_size[0])), min(resolution[1] - 1, max(0, event.pos[1] // pixel_size[1])))
+                mouse_coord = (event.pos[0] // pixel_size[0], event.pos[1] // pixel_size[1])
                 if last_mouse_pos:
-                    draw_line(last_mouse_pos, mouse_coord, (0, 255, 0), 4)
+                    draw_line(last_mouse_pos, mouse_coord, (0, 255, 0), 5)
                 else:
                     draw(0, mouse_coord, (0, 255, 0))
                 last_mouse_pos = mouse_coord
